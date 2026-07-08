@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 BERMAIN BERSAMA IBU JONA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            pink: '#FFD1DC',
+                            blue: '#B5EAD7',
+                            yellow: '#FFDAC1',
+                            green: '#E2F0CB',
+                            purple: '#C7CEEA',
+                            orange: '#FFB7B2'
+                        },
+                        jona: {
+                            brown: '#8B5A2B',
+                            yellow: '#FFD700'
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['"Fredoka One"', 'cursive'],
+                        body: ['Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #FFF0F5;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 209, 220, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(181, 234, 215, 0.4) 0%, transparent 50%);
+            background-attachment: fixed;
+            margin: 0;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: '"Fredoka One"', cursive;
+            letter-spacing: 1px;
+        }
+
+        /* 3D Glossy Buttons */
+        .btn-3d {
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15), 0 10px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-3d::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            width: 60%;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.6), transparent);
+            border-radius: 50%;
+        }
+        .btn-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Card Kawaii Style */
+        .kawaii-card {
+            background: white;
+            border-radius: 30px;
+            border: 6px solid white;
+            box-shadow: 0 15px 35px rgba(255, 183, 178, 0.3), inset 0 0 0 2px rgba(255, 209, 220, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Characters Placeholder Styling */
+        .avatar-box {
+            border: 4px solid transparent;
+            transition: all 0.3s;
+        }
+        .avatar-box.selected {
+            border-color: #FF69B4;
+            background-color: #FFF0F5;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.3);
+        }
+
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .progress-bar-fill {
+            height: 20px;
+            background: linear-gradient(90deg, #FFB7B2, #FF9A9E);
+            transition: width 0.3s ease;
+            border-radius: 999px;
+        }
+
+        /* Chart */
+        .chart-bar {
+            transition: height 1s ease-out;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+        }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .bounce-in { animation: bounceIn 0.8s; }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #FFF0F5; }
+        ::-webkit-scrollbar-thumb { background: #FFB7B2; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-gray-700">
+
+    <div id="app" class="w-full max-w-4xl mx-auto min-h-screen relative shadow-2xl bg-white/40">
+        
+        <!-- HEADER (Persistent in game) -->
+        <header id="game-header" class="hidden w-full p-4 flex justify-between items-center z-10 sticky top-0 bg-white/80 backdrop-blur-md rounded-b-3xl shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-pastel-pink border-4 border-white shadow-md flex items-center justify-center text-xl" id="header-avatar">👦</div>
+                <div class="font-heading text-lg text-pink-500" id="header-name">Pemain</div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="bg-pastel-yellow px-4 py-2 rounded-full font-heading text-yellow-600 shadow-inner flex items-center gap-2">
+                    <i class="fa-solid fa-star text-yellow-400 drop-shadow"></i> <span id="header-score">0</span>
+                </div>
+                <button onclick="goMap()" class="btn-3d bg-pastel-blue text-blue-700 p-2 rounded-full w-12 h-12 flex justify-center items-center">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: SPLASH -->
+        <div id="screen-splash" class="screen active justify-center items-center p-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+            <div class="text-center bounce-in kawaii-card p-10 max-w-lg w-full">
+                <div class="mb-6 relative inline-block">
+                    <!-- Ibu Jona Illustration Placeholder (CSS styled) -->
+                    <div class="w-40 h-40 mx-auto rounded-full bg-jona-brown border-8 border-jona-yellow shadow-xl flex items-center justify-center overflow-hidden relative">
+                        <div class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent"></div>
+                        <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Jona&backgroundColor=8B5A2B&clothing=blazerAndShirt" alt="Ibu Jona" class="w-32 h-32 object-cover">
+                    </div>
+                    <div class="absolute -bottom-2 -right-2 bg-pink-500 text-white font-heading text-sm px-3 py-1 rounded-full shadow-lg border-2 border-white">
+                        Ibu Jona
+                    </div>
+                </div>
+                <h1 class="text-4xl md:text-5xl text-pink-500 mb-2 drop-shadow-md">🎮 BERMAIN BERSAMA IBU JONA</h1>
+                <h2 class="text-xl md:text-2xl text-blue-500 font-bold mb-8">Petualangan Seru Mengenal Bilangan Cacah</h2>
+                <p class="mb-8 text-gray-600 font-semibold">Siapkah kamu menjadi pahlawan di Kota Bilangan?</p>
+                <button onclick="showScreen('screen-register')" class="btn-3d w-full bg-gradient-to-r from-pink-400 to-pink-500 text-white font-heading text-2xl py-4 rounded-full">
+                    MULAI BERMAIN! <i class="fa-solid fa-play ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: REGISTER -->
+        <div id="screen-register" class="screen justify-center items-center p-6">
+            <div class="kawaii-card p-8 max-w-md w-full">
+                <h2 class="font-heading text-3xl text-center text-purple-500 mb-6">Siapa Namamu?</h2>
+                <input type="text" id="input-name" placeholder="Ketik namamu di sini..." class="w-full bg-gray-50 border-4 border-pastel-purple rounded-2xl p-4 text-xl font-bold text-center mb-6 focus:outline-none focus:border-purple-400 transition-colors">
+                
+                <h3 class="font-heading text-xl text-center text-gray-600 mb-4">Pilih Karaktermu:</h3>
+                <div class="flex justify-center gap-6 mb-8">
+                    <div class="avatar-box cursor-pointer p-4 rounded-3xl" onclick="selectAvatar('👦')">
+                        <div class="text-6xl text-center">👦</div>
+                        <p class="font-bold text-center mt-2 text-blue-500">Siswa Laki-laki</p>
+                    </div>
+                    <div class="avatar-box cursor-pointer p-4 rounded-3xl" onclick="selectAvatar('👧')">
+                        <div class="text-6xl text-center">👧</div>
+                        <p class="font-bold text-center mt-2 text-pink-500">Siswa Perempuan</p>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="btn-3d w-full bg-gradient-to-r from-purple-400 to-blue-400 text-white font-heading text-2xl py-4 rounded-full">
+                    MASUK KE KOTA BILANGAN <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: MAP / LEVEL SELECTION -->
+        <div id="screen-map" class="screen p-6 pb-20 justify-center">
+            <div class="text-center mb-8">
+                <h2 class="font-heading text-4xl text-blue-600 drop-shadow-md">Peta Kota Bilangan</h2>
+                <p class="text-lg font-bold text-gray-600 mt-2 bg-white/70 inline-block px-6 py-2 rounded-full">Pilih misi yang ingin kamu selesaikan!</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto relative">
+                <!-- Level 1 -->
+                <button onclick="startLevel(1)" class="btn-3d kawaii-card p-6 flex flex-col items-center bg-pastel-yellow hover:scale-105 transition-transform" id="btn-lvl-1">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl mb-3 text-yellow-500 shadow-inner">
+                        <i class="fa-solid fa-house"></i>
+                    </div>
+                    <h3 class="font-heading text-xl text-yellow-700">Level 1</h3>
+                    <p class="font-bold text-sm">Rumah Nilai Tempat</p>
+                    <div class="mt-2 text-yellow-500 level-stars" id="stars-1">☆☆☆☆☆</div>
+                </button>
+                
+                <!-- Level 2 -->
+                <button onclick="startLevel(2)" class="btn-3d kawaii-card p-6 flex flex-col items-center bg-pastel-green hover:scale-105 transition-transform opacity-75" id="btn-lvl-2">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl mb-3 text-green-500 shadow-inner">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <h3 class="font-heading text-xl text-green-700">Level 2</h3>
+                    <p class="font-bold text-sm">Pasar Pintar</p>
+                    <div class="mt-2 text-green-500 level-stars" id="stars-2">☆☆☆☆☆</div>
+                </button>
+
+                <!-- Level 3 -->
+                <button onclick="startLevel(3)" class="btn-3d kawaii-card p-6 flex flex-col items-center bg-pastel-blue hover:scale-105 transition-transform opacity-75" id="btn-lvl-3">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl mb-3 text-blue-500 shadow-inner">
+                        <i class="fa-solid fa-flask"></i>
+                    </div>
+                    <h3 class="font-heading text-xl text-blue-700">Level 3</h3>
+                    <p class="font-bold text-sm">Lab Angka</p>
+                    <div class="mt-2 text-blue-500 level-stars" id="stars-3">☆☆☆☆☆</div>
+                </button>
+
+                <!-- Level 4 -->
+                <button onclick="startLevel(4)" class="btn-3d kawaii-card p-6 flex flex-col items-center bg-pastel-pink hover:scale-105 transition-transform opacity-75" id="btn-lvl-4">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl mb-3 text-pink-500 shadow-inner">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    </div>
+                    <h3 class="font-heading text-xl text-pink-700">Level 4</h3>
+                    <p class="font-bold text-sm">Detektif Data</p>
+                    <div class="mt-2 text-pink-500 level-stars" id="stars-4">☆☆☆☆☆</div>
+                </button>
+            </div>
+
+            <!-- Tantangan Akhir (Boss Level) -->
+            <div class="mt-10 max-w-xl mx-auto">
+                <button onclick="startLevel(5)" class="btn-3d kawaii-card w-full p-6 flex flex-col items-center bg-gradient-to-r from-yellow-300 to-orange-400 opacity-50 cursor-not-allowed" id="btn-lvl-5">
+                    <div class="text-5xl mb-2 text-white drop-shadow-md">👑</div>
+                    <h3 class="font-heading text-2xl text-white drop-shadow-md">Tantangan Akhir</h3>
+                    <p class="font-bold text-white">Selesaikan Level 1-4 untuk membuka!</p>
+                </button>
+            </div>
+            
+            <div class="text-center mt-8">
+                <button onclick="showRecap()" class="btn-3d bg-purple-500 text-white font-heading px-8 py-3 rounded-full">Lihat Rapor & Prestasi 🏆</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: GAMEPLAY LEVEL -->
+        <div id="screen-gameplay" class="screen p-4 pb-20 flex-col">
+            <!-- Top Progress -->
+            <div class="w-full max-w-2xl mx-auto mb-6">
+                <div class="flex justify-between font-bold text-sm text-gray-500 mb-1 px-2">
+                    <span id="level-title-display">Level 1</span>
+                    <span>Soal <span id="q-current">1</span>/<span id="q-total">5</span></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-bar" style="width: 20%;"></div>
+                </div>
+            </div>
+
+            <!-- Ibu Jona Instruction Box -->
+            <div class="kawaii-card bg-pastel-yellow p-4 mb-6 max-w-2xl mx-auto w-full flex items-center gap-4 cursor-pointer hover:bg-yellow-100 transition" onclick="playCurrentInstruction()">
+                <div class="w-16 h-16 shrink-0 rounded-full bg-jona-brown border-4 border-jona-yellow overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Jona&backgroundColor=8B5A2B" alt="Ibu Jona" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-yellow-800 text-lg md:text-xl" id="ibu-jona-text">"Pilih jawaban yang benar ya!"</p>
+                    <p class="text-xs text-yellow-600 mt-1"><i class="fa-solid fa-volume-high"></i> Ketuk untuk mendengar suara Ibu Jona</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Question Container -->
+            <div id="question-container" class="max-w-2xl mx-auto w-full flex-1 flex flex-col justify-center">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+
+        <!-- SCREEN 5: RECAP/RAPOR -->
+        <div id="screen-recap" class="screen p-6 pb-20 justify-center items-center bg-gradient-to-b from-blue-100 to-purple-100">
+            <div class="kawaii-card p-8 max-w-2xl w-full text-center relative overflow-hidden">
+                <!-- Decorative -->
+                <div class="absolute -top-10 -right-10 text-9xl opacity-10">🏆</div>
+                <div class="absolute -bottom-10 -left-10 text-9xl opacity-10">⭐</div>
+                
+                <h2 class="font-heading text-4xl text-purple-600 mb-2">Rapor Pahlawan Angka</h2>
+                <p class="font-bold text-gray-500 mb-6">Hasil petualanganmu bersama Ibu Jona</p>
+                
+                <div class="bg-white rounded-3xl p-6 shadow-inner mb-6">
+                    <div class="flex justify-center items-center gap-4 mb-4">
+                        <div class="text-5xl" id="recap-avatar">👦</div>
+                        <h3 class="font-heading text-2xl text-blue-600" id="recap-name">Nama Siswa</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-left font-bold text-lg">
+                        <div class="bg-pastel-pink p-4 rounded-xl flex items-center justify-between">
+                            <span>Total Skor:</span> <span class="text-pink-600 text-2xl font-heading" id="recap-score">0</span>
+                        </div>
+                        <div class="bg-pastel-yellow p-4 rounded-xl flex items-center justify-between">
+                            <span>Bintang:</span> <span class="text-yellow-600 text-2xl font-heading" id="recap-stars">0 <i class="fa-solid fa-star"></i></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-heading text-lg text-gray-700 mb-3 text-left">Lencana yang Diperoleh:</h4>
+                        <div class="flex flex-wrap gap-3 justify-center" id="badges-container">
+                            <!-- Badges injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-orange-50 p-4 rounded-xl border-2 border-orange-200 mb-6 text-left">
+                    <h4 class="font-bold text-orange-600 mb-2"><i class="fa-solid fa-clipboard-list"></i> Catatan Ibu Jona:</h4>
+                    <p id="recap-feedback" class="text-gray-700 font-semibold">Ayo selesaikan semua level untuk melihat catatan Ibu Jona!</p>
+                </div>
+
+                <button onclick="goMap()" class="btn-3d bg-blue-500 text-white font-heading px-8 py-3 rounded-full text-xl">
+                    <i class="fa-solid fa-map"></i> Kembali ke Peta
+                </button>
+            </div>
+        </div>
+
+        <!-- GLOBAL MODAL (Feedback Benar/Salah) -->
+        <div id="feedback-modal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+            <div class="kawaii-card p-8 max-w-sm w-[90%] text-center transform scale-90 transition-transform duration-300" id="feedback-modal-content">
+                <div id="feedback-icon" class="text-7xl mb-4">⭐</div>
+                <h2 id="feedback-title" class="font-heading text-3xl mb-2 text-green-500">Hebat!</h2>
+                <p id="feedback-message" class="font-bold text-gray-600 mb-6 text-lg">Kamu menjawab dengan benar.</p>
+                <button onclick="nextQuestion()" class="btn-3d w-full bg-green-500 text-white font-heading text-xl py-3 rounded-full" id="btn-next-modal">LANJUTKAN</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        // Minimum 20 questions total for practice (5 per level) + 5 final boss
+        const gameData = {
+            1: {
+                title: "Rumah Nilai Tempat",
+                theme: "yellow",
+                questions: [
+                    { type: 'mcq', q: "Angka 5 pada bilangan 45.672 bernilai tempat?", jonaText: "Perhatikan baik-baik posisi angka 5 ya!", options: ["Ribuan", "Puluhan", "Satuan", "Ratusan"], ans: 0 },
+                    { type: 'mcq', q: "Nilai tempat angka 8 pada bilangan 18.230 adalah?", jonaText: "Coba ingat tabel nilai tempat dari kanan ke kiri.", options: ["Puluhan", "Ratusan", "Ribuan", "Puluh Ribuan"], ans: 2 },
+                    { type: 'mcq', q: "Pada bilangan 74.091, angka 7 menempati posisi?", jonaText: "Angka paling depan pada 5 digit ini nilai tempatnya apa?", options: ["Ribuan", "Ratusan", "Puluh Ribuan", "Puluhan"], ans: 2 },
+                    { type: 'mcq', q: "Manakah bilangan yang angka 3-nya bernilai RATUSAN?", jonaText: "Cari angka 3 yang posisinya tiga dari belakang.", options: ["43.500", "12.350", "90.003", "35.120"], ans: 1 },
+                    { type: 'mcq', q: "Angka 9 pada 59.824 bernilai...", jonaText: "Jangan tertukar antara Ribuan dan Puluh Ribuan ya.", options: ["90.000", "900", "90", "9.000"], ans: 3 }
+                ]
+            },
+            2: {
+                title: "Pasar Pintar Ibu Jona",
+                theme: "green",
+                questions: [
+                    { type: 'mcq', q: "Harga tas adalah Rp45.000. Bagaimana cara membacanya?", jonaText: "Bantu pedagang ini membaca harga tas yang benar.", options: ["Empat puluh lima ribu", "Empat lima nol nol nol", "Empat ratus lima ribu", "Empat puluh lima ratus"], ans: 0 },
+                    { type: 'mcq', q: "Harga sepatu Rp70.500. Dibaca...", jonaText: "Perhatikan ada angka 5 di nilai tempat ratusan.", options: ["Tujuh puluh ribu lima ratus", "Tujuh ratus lima ribu", "Tujuh nol lima nol nol", "Tujuh puluh lima ribu"], ans: 0 },
+                    { type: 'mcq', q: "Mana penulisan harga yang benar untuk 'Dua belas ribu rupiah'?", jonaText: "Ingat penggunaan tanda titik untuk memisahkan ribuan.", options: ["Rp1.2000", "Rp12.000", "Rp120.00", "Rp12000."], ans: 1 },
+                    { type: 'mcq', q: "Ibu membeli buah seharga Rp35.000. Cara membacanya adalah?", jonaText: "Ini harga buah yang ibu beli, coba baca dengan lantang.", options: ["Tiga puluh lima ratus", "Tiga lima ribu", "Tiga puluh lima ribu", "Tiga ratus lima puluh"], ans: 2 },
+                    { type: 'mcq', q: "Penulisan 'Delapan puluh sembilan ribu' yang benar adalah...", jonaText: "Tanda titik diletakkan tiga angka dari belakang.", options: ["89.000", "8.900", "890.00", "890.000"], ans: 0 }
+                ]
+            },
+            3: {
+                title: "Laboratorium Angka",
+                theme: "blue",
+                questions: [
+                    { type: 'input', q: "Tuliskan angka dari: 'Lima puluh enam ribu tujuh ratus sembilan'", jonaText: "Ketik angka dengan benar. Gunakan tanda titik ya, misalnya 10.000.", ans: "56.709" },
+                    { type: 'input', q: "Tuliskan angka dari: 'Delapan puluh tiga ribu lima ratus dua puluh'", jonaText: "Dengarkan baik-baik: Delapan puluh tiga ribu lima ratus dua puluh.", ans: "83.520" },
+                    { type: 'input', q: "Tuliskan angka dari: 'Tiga belas ribu empat ratus'", jonaText: "Hati-hati dengan nol di belakang.", ans: "13.400" },
+                    { type: 'input', q: "Tuliskan angka dari: 'Sembilan puluh ribu delapan'", jonaText: "Ada banyak angka nol di bilangan ini, perhatikan!", ans: "90.008" },
+                    { type: 'input', q: "Tuliskan angka dari: 'Dua puluh empat ribu seratus lima belas'", jonaText: "Ketik dengan format XX.XXX", ans: "24.115" }
+                ]
+            },
+            4: {
+                title: "Detektif Data Statistik",
+                theme: "pink",
+                questions: [
+                    { type: 'chart', q: "Siapa yang membaca buku paling banyak?", jonaText: "Lihat diagram batang ini, batang mana yang paling tinggi?", data: { Andi: 12000, Beni: 15000, Citra: 18000 }, options: ["Andi", "Beni", "Citra", "Sama semua"], ans: 2 },
+                    { type: 'chart', q: "Berapa banyak buku yang dibaca Andi?", jonaText: "Cek batang milik Andi, berapa angkanya?", data: { Andi: 12000, Beni: 15000, Citra: 18000 }, options: ["12.000", "15.000", "18.000", "20.000"], ans: 0 },
+                    { type: 'chart', q: "Sebutkan nilai tempat angka 8 pada bilangan buku Citra (18.000)!", jonaText: "Hubungkan jumlah buku Citra dengan pelajaran nilai tempat.", data: { Andi: 12000, Beni: 15000, Citra: 18000 }, options: ["Puluhan", "Ratusan", "Ribuan", "Puluh Ribuan"], ans: 2 },
+                    { type: 'chart', q: "Siapa yang membaca buku sebanyak lima belas ribu?", jonaText: "Cari angka 15.000 di diagram.", data: { Andi: 12000, Beni: 15000, Citra: 18000 }, options: ["Andi", "Beni", "Citra", "Tidak ada"], ans: 1 },
+                    { type: 'chart', q: "Siapa yang membaca buku paling sedikit?", jonaText: "Batang yang paling pendek adalah yang paling sedikit.", data: { Andi: 12000, Beni: 15000, Citra: 18000 }, options: ["Citra", "Beni", "Andi", "Semua sama"], ans: 2 }
+                ]
+            },
+            5: {
+                title: "Tantangan Akhir (Ujian Ahli)",
+                theme: "orange",
+                questions: [
+                    { type: 'mcq', q: "Gabungan: Nilai tempat angka 4 pada 64.912 adalah?", jonaText: "Ujian dimulai! Tetap fokus.", options: ["Puluh Ribuan", "Ribuan", "Ratusan", "Puluhan"], ans: 1 },
+                    { type: 'input', q: "Tulis angka: 'Tujuh puluh satu ribu dua ratus'", jonaText: "Ketik angkanya pakai tanda titik.", ans: "71.200" },
+                    { type: 'mcq', q: "Budi punya uang Rp50.000. Dibaca?", jonaText: "Berapa uang saku Budi hari ini?", options: ["Lima ribu", "Lima puluh ribu", "Lima ratus ribu", "Lima nol ribu"], ans: 1 },
+                    { type: 'mcq', q: "Angka 0 pada 10.555 bernilai tempat...", jonaText: "Walaupun nol, ia tetap punya nilai tempat lho!", options: ["Puluh Ribuan", "Ribuan", "Ratusan", "Puluhan"], ans: 1 },
+                    { type: 'mcq', q: "Nilai angka 7 pada 72.300 adalah?", jonaText: "Pertanyaan terakhir! Berapa nilai aslinya?", options: ["7.000", "70", "700", "70.000"], ans: 3 }
+                ]
+            }
+        };
+
+        // --- GAME STATE ---
+        let state = {
+            name: "",
+            avatar: "",
+            score: 0,
+            stars: 0,
+            currentLevel: 1,
+            currentQuestionIndex: 0,
+            levelScores: {1:0, 2:0, 3:0, 4:0, 5:0},
+            unlockedLevels: 1 // 1 unlocked initially
+        };
+
+        // --- CORE FUNCTIONS ---
+        function selectAvatar(emoji) {
+            document.querySelectorAll('.avatar-box').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            state.avatar = emoji;
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('input-name').value.trim();
+            if (!nameInput) {
+                playTTS("Tulis namamu dulu ya pahlawan kecil!");
+                document.getElementById('input-name').classList.add('shake');
+                setTimeout(() => document.getElementById('input-name').classList.remove('shake'), 500);
+                return;
+            }
+            if (!state.avatar) {
+                playTTS("Pilih karaktermu dulu yuk!");
+                return;
+            }
+            
+            state.name = nameInput;
+            document.getElementById('header-name').innerText = state.name;
+            document.getElementById('header-avatar').innerText = state.avatar;
+            document.getElementById('game-header').classList.remove('hidden');
+            
+            playTTS(`Halo ${state.name}! Selamat datang di Kota Bilangan. Ayo kita mulai petualangan!`);
+            goMap();
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function goMap() {
+            updateMapUI();
+            showScreen('screen-map');
+        }
+
+        function updateMapUI() {
+            // Update stars
+            for(let i=1; i<=5; i++) {
+                let starStr = "";
+                for(let j=0; j<5; j++) {
+                    starStr += (j < state.levelScores[i]) ? "★" : "☆";
+                }
+                if(document.getElementById(`stars-${i}`)) {
+                    document.getElementById(`stars-${i}`).innerText = starStr;
+                }
+                
+                // Unlock logic
+                let btn = document.getElementById(`btn-lvl-${i}`);
+                if (i <= state.unlockedLevels) {
+                    btn.classList.remove('opacity-75', 'opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.add('opacity-75', 'cursor-not-allowed');
+                }
+            }
+
+            // Boss level unlock
+            if(state.unlockedLevels >= 5) {
+                let boss = document.getElementById('btn-lvl-5');
+                boss.classList.remove('opacity-50', 'cursor-not-allowed');
+                boss.innerHTML = `
+                    <div class="text-5xl mb-2 text-white drop-shadow-md">🔥</div>
+                    <h3 class="font-heading text-2xl text-white drop-shadow-md">Tantangan Akhir</h3>
+                    <p class="font-bold text-white">Klik untuk mulai!</p>
+                `;
+            }
+        }
+
+        // --- TTS ENGINE ---
+        function playTTS(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop current playing
+                let msg = new SpeechSynthesisUtterance();
+                msg.text = text;
+                msg.lang = 'id-ID';
+                msg.rate = 0.9; // Slightly slower for kids
+                msg.pitch = 1.2; // A bit higher pitch for friendly teacher
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function playCurrentInstruction() {
+            const text = document.getElementById('ibu-jona-text').innerText;
+            playTTS(text.replace(/["']/g, ""));
+        }
+
+        // --- GAMEPLAY LOGIC ---
+        function startLevel(lvl) {
+            if (lvl > state.unlockedLevels && lvl !== 5) {
+                playTTS("Selesaikan level sebelumnya dulu ya!");
+                return;
+            }
+            if (lvl === 5 && state.unlockedLevels < 5) {
+                playTTS("Kumpulkan keberanian dengan menyelesaikan level 1 sampai 4 dulu!");
+                return;
+            }
+
+            state.currentLevel = lvl;
+            state.currentQuestionIndex = 0;
+            state.levelScores[lvl] = 0; // Reset score for this attempt
+            
+            document.getElementById('level-title-display').innerText = gameData[lvl].title;
+            showScreen('screen-gameplay');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const lvlData = gameData[state.currentLevel];
+            const qData = lvlData.questions[state.currentQuestionIndex];
+            
+            // Update UI
+            document.getElementById('q-current').innerText = state.currentQuestionIndex + 1;
+            document.getElementById('q-total').innerText = lvlData.questions.length;
+            document.getElementById('progress-bar').style.width = `${((state.currentQuestionIndex) / lvlData.questions.length) * 100}%`;
+            
+            document.getElementById('ibu-jona-text').innerText = `"${qData.jonaText}"`;
+            playTTS(qData.jonaText);
+
+            const container = document.getElementById('question-container');
+            container.innerHTML = '';
+            
+            // Base Question Card
+            let html = `
+                <div class="kawaii-card p-6 w-full shadow-lg border-t-8 border-${lvlData.theme}-400 bounce-in">
+                    <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">${qData.q}</h3>
+            `;
+
+            // Question Types
+            if (qData.type === 'mcq') {
+                html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                qData.options.forEach((opt, idx) => {
+                    html += `<button onclick="checkAnswer(${idx})" class="btn-3d bg-white border-2 border-${lvlData.theme}-200 p-4 rounded-2xl text-lg font-bold text-gray-700 hover:bg-${lvlData.theme}-50 transition text-left flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-${lvlData.theme}-100 text-${lvlData.theme}-600 flex items-center justify-center shrink-0">${String.fromCharCode(65+idx)}</span>
+                        ${opt}
+                    </button>`;
+                });
+                html += `</div>`;
+            } 
+            else if (qData.type === 'input') {
+                html += `
+                    <div class="flex flex-col items-center gap-4">
+                        <input type="text" id="ans-input" placeholder="Ketik jawabanmu..." class="w-full max-w-sm bg-gray-50 border-4 border-${lvlData.theme}-200 rounded-2xl p-4 text-2xl font-bold text-center focus:outline-none focus:border-${lvlData.theme}-500">
+                        <button onclick="checkInputAnswer()" class="btn-3d bg-${lvlData.theme}-500 text-white font-heading px-8 py-3 rounded-full text-xl w-full max-w-sm">Jawab</button>
+                    </div>
+                `;
+            }
+            else if (qData.type === 'chart') {
+                html += `
+                    <div class="flex items-end justify-around h-48 bg-gray-50 rounded-2xl p-4 border-2 border-dashed border-gray-300 mb-6 relative">
+                        <div class="absolute top-2 left-2 text-xs font-bold text-gray-400">Jumlah Buku</div>
+                `;
+                const maxVal = Math.max(...Object.values(qData.data));
+                for (const [name, val] of Object.entries(qData.data)) {
+                    const heightPct = (val / maxVal) * 100;
+                    html += `
+                        <div class="flex flex-col items-center w-1/4 group">
+                            <div class="text-xs font-bold text-gray-500 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">${val.toLocaleString('id-ID')}</div>
+                            <div class="w-full bg-${lvlData.theme}-400 chart-bar" style="height: ${heightPct}%"></div>
+                            <div class="mt-2 font-bold text-sm text-gray-700">${name}</div>
+                        </div>
+                    `;
+                }
+                html += `</div><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                qData.options.forEach((opt, idx) => {
+                    html += `<button onclick="checkAnswer(${idx})" class="btn-3d bg-white border-2 border-${lvlData.theme}-200 p-4 rounded-2xl text-lg font-bold text-gray-700 hover:bg-${lvlData.theme}-50 text-left flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-${lvlData.theme}-100 text-${lvlData.theme}-600 flex items-center justify-center shrink-0">${String.fromCharCode(65+idx)}</span>
+                        ${opt}
+                    </button>`;
+                });
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function checkInputAnswer() {
+            const inputVal = document.getElementById('ans-input').value.trim();
+            const qData = gameData[state.currentLevel].questions[state.currentQuestionIndex];
+            if (!inputVal) return;
+            
+            if (inputVal === qData.ans) {
+                handleCorrect();
+            } else {
+                handleWrong(qData.ans);
+            }
+        }
+
+        function checkAnswer(selectedIdx) {
+            const qData = gameData[state.currentLevel].questions[state.currentQuestionIndex];
+            if (selectedIdx === qData.ans) {
+                handleCorrect();
+            } else {
+                let correctText = qData.type === 'mcq' || qData.type === 'chart' ? qData.options[qData.ans] : qData.ans;
+                handleWrong(correctText);
+            }
+        }
+
+        function handleCorrect() {
+            state.score += 10;
+            state.levelScores[state.currentLevel]++;
+            document.getElementById('header-score').innerText = state.score;
+            
+            showModal(true, "Hebat!", "Jawabanmu benar! Dapat +10 Poin & ⭐");
+            playTTS("Hebat! Kamu menjawab dengan benar.");
+        }
+
+        function handleWrong(correctAnswer) {
+            showModal(false, "Oops, Hampir Benar!", `Jawaban yang tepat adalah: <b>${correctAnswer}</b>.<br>Jangan menyerah, coba lagi di soal berikutnya!`);
+            playTTS("Jangan menyerah, coba perhatikan lagi dengan teliti.");
+        }
+
+        function showModal(isCorrect, title, message) {
+            const modal = document.getElementById('feedback-modal');
+            const content = document.getElementById('feedback-modal-content');
+            
+            document.getElementById('feedback-icon').innerText = isCorrect ? '⭐' : '💡';
+            document.getElementById('feedback-title').innerText = title;
+            document.getElementById('feedback-title').className = `font-heading text-3xl mb-2 ${isCorrect ? 'text-green-500' : 'text-orange-500'}`;
+            document.getElementById('feedback-message').innerHTML = message;
+            
+            const btn = document.getElementById('btn-next-modal');
+            btn.className = `btn-3d w-full font-heading text-xl py-3 rounded-full text-white ${isCorrect ? 'bg-green-500' : 'bg-orange-500'}`;
+            
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-90');
+        }
+
+        function nextQuestion() {
+            const modal = document.getElementById('feedback-modal');
+            const content = document.getElementById('feedback-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-90');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+
+            state.currentQuestionIndex++;
+            const totalQ = gameData[state.currentLevel].questions.length;
+            
+            if (state.currentQuestionIndex < totalQ) {
+                loadQuestion();
+            } else {
+                finishLevel();
+            }
+        }
+
+        function finishLevel() {
+            const correctAnswers = state.levelScores[state.currentLevel];
+            const totalQ = gameData[state.currentLevel].questions.length;
+            
+            state.stars += correctAnswers; // 1 star per correct answer
+            
+            if (correctAnswers >= (totalQ / 2) && state.currentLevel === state.unlockedLevels && state.currentLevel < 5) {
+                state.unlockedLevels++; // Unlock next level
+            }
+
+            playTTS(`Level selesai! Kamu mendapat ${correctAnswers} bintang.`);
+            
+            // Auto back to map
+            goMap();
+        }
+
+        function showRecap() {
+            document.getElementById('recap-name').innerText = state.name;
+            document.getElementById('recap-avatar').innerText = state.avatar;
+            document.getElementById('recap-score').innerText = state.score;
+            document.getElementById('recap-stars').innerHTML = `${state.stars} <i class="fa-solid fa-star"></i>`;
+            
+            // Feedback logic
+            let feedback = "";
+            let badgesHTML = "";
+            
+            if (state.levelScores[1] >= 4) badgesHTML += `<div class="bg-yellow-100 border-2 border-yellow-400 text-yellow-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm"><i class="fa-solid fa-medal text-yellow-500"></i> Ahli Nilai Tempat</div>`;
+            if (state.levelScores[2] >= 4) badgesHTML += `<div class="bg-green-100 border-2 border-green-400 text-green-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm"><i class="fa-solid fa-cart-shopping text-green-500"></i> Pembaca Harga Hebat</div>`;
+            if (state.levelScores[3] >= 4) badgesHTML += `<div class="bg-blue-100 border-2 border-blue-400 text-blue-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm"><i class="fa-solid fa-pen-nib text-blue-500"></i> Penulis Angka Jitu</div>`;
+            if (state.levelScores[4] >= 4) badgesHTML += `<div class="bg-pink-100 border-2 border-pink-400 text-pink-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm"><i class="fa-solid fa-magnifying-glass text-pink-500"></i> Detektif Data</div>`;
+            if (state.levelScores[5] >= 4) badgesHTML += `<div class="bg-orange-100 border-2 border-orange-400 text-orange-700 px-4 py-2 rounded-full text-md font-bold shadow-md transform scale-110"><i class="fa-solid fa-trophy text-orange-500"></i> Juara Matematika</div>`;
+
+            if (badgesHTML === "") {
+                badgesHTML = "<span class='text-gray-400 text-sm italic'>Kumpulkan 4 bintang di sebuah level untuk mendapat lencana.</span>";
+            }
+            document.getElementById('badges-container').innerHTML = badgesHTML;
+
+            // Diagnostic feedback
+            let weakPoints = [];
+            if (state.levelScores[1] < 3) weakPoints.push("Konsep Nilai Tempat");
+            if (state.levelScores[2] < 3) weakPoints.push("Membaca Bilangan dengan Titik");
+            if (state.levelScores[3] < 3) weakPoints.push("Menulis Angka");
+            if (state.levelScores[4] < 3) weakPoints.push("Membaca Diagram Data");
+
+            if (state.unlockedLevels < 5) {
+                feedback = `"Hebat sekali kamu sudah sampai sejauh ini, ${state.name}! Terus mainkan level yang belum terbuka ya!" - Ibu Jona`;
+            } else if (weakPoints.length > 0) {
+                feedback = `"Kerja bagus, ${state.name}! Kamu sudah menyelesaikan semua materi. Namun, ayo kita berlatih lagi di bagian <b>${weakPoints.join(' dan ')}</b> supaya kamu makin jago!" - Ibu Jona`;
+            } else {
+                feedback = `"Luar biasa, ${state.name}! Kamu menguasai semua materi Bilangan Cacah dengan sempurna! Kamu pantas disebut Pahlawan Angka!" - Ibu Jona`;
+            }
+            document.getElementById('recap-feedback').innerHTML = feedback;
+
+            playTTS(feedback.replace(/<[^>]*>?/gm, '')); // Read feedback without HTML tags
+            showScreen('screen-recap');
+        }
+
+    </script>
+</body>
+</html>
